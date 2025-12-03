@@ -1,5 +1,8 @@
 package com.munni.telegram_app_backend.personnel.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.munni.telegram_app_backend.personnel.role.Role;
+import com.munni.telegram_app_backend.referral.Referral;
 import com.munni.telegram_app_backend.task.Task;
 import com.munni.telegram_app_backend.withdrawal.Withdrawal;
 import jakarta.persistence.*;
@@ -42,6 +45,9 @@ public class User {
 	@Column(name = "referral_code", length = 8, unique = true, nullable = false)
 	private String referralCode;
 
+	@Column(name = "password")
+	private String password;
+
 	@Column(nullable = false, precision = 20, scale = 2)
 	private BigDecimal totalEarnings;
 	@Column(nullable = false)
@@ -68,8 +74,8 @@ public class User {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Withdrawal> withdrawals;
 
-	@OneToMany(mappedBy = "referrer", cascade = CascadeType.ALL)
-	private List<LdapProperties.Referral> myReferrals;
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private List<Referral> myReferrals;
 
 	@ManyToOne
 	@JoinColumn(name = "referred_by_id")
@@ -77,8 +83,13 @@ public class User {
 
 	private Boolean isActive = true;
 
+	@Column(name = "email", length = 255, unique = true, nullable = false)
+	private String email;
 
-
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "role_id")
+	private Role role;
 
 
 }

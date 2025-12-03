@@ -2,12 +2,14 @@ package com.munni.telegram_app_backend.security.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.munni.telegram_app_backend.enums.TokenType;
 import com.munni.telegram_app_backend.exception.CustomException;
 import com.munni.telegram_app_backend.personnel.user.User;
 import com.munni.telegram_app_backend.personnel.user.UserRepo;
 import com.munni.telegram_app_backend.personnel.user.UserService;
 import com.munni.telegram_app_backend.security.JwtService;
 import com.munni.telegram_app_backend.security.UserDetailsImpl;
+import com.munni.telegram_app_backend.security.tokens.Token;
 import com.munni.telegram_app_backend.security.tokens.TokenRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,7 +49,8 @@ public class AuthenticationService {
 
 		// 2. Create user
 		User user = User.builder()
-				.firstName(request.getFullName())
+				.firstName(request.getFirstName())
+				.lastName(request.getLastName())
 				.telegramId(request.getEmail())
 				.userName(request.getUserName())
 				.isActive(Boolean.TRUE)

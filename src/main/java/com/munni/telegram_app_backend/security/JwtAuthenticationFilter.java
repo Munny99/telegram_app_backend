@@ -1,7 +1,8 @@
 package com.munni.telegram_app_backend.security;
 
-import com.monaum.Rapid_Global.module.personnel.user.UserService;
-import com.monaum.Rapid_Global.security.tokens.TokenRepo;
+
+import com.munni.telegram_app_backend.personnel.user.UserService;
+import com.munni.telegram_app_backend.security.tokens.TokenRepo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

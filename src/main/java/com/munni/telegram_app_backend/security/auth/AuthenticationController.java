@@ -1,5 +1,8 @@
 package com.munni.telegram_app_backend.security.auth;
 
+import com.munni.telegram_app_backend.enums.ResponseStatusType;
+import com.munni.telegram_app_backend.model.ResponseBuilder;
+import com.munni.telegram_app_backend.model.SuccessResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
@@ -15,7 +19,7 @@ import java.io.IOException;
  * @since jul 18, 2025
  */
 
-@RestApiController
+@RestController
 @RequestMapping("/api/auth")
 public class AuthenticationController {
 

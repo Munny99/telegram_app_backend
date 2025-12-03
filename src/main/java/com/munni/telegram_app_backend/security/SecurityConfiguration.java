@@ -1,9 +1,9 @@
 package com.munni.telegram_app_backend.security;
 
-import com.monaum.Rapid_Global.exception.CustomAccessDeniedHandler;
-import com.monaum.Rapid_Global.exception.CustomAuthenticationEntryPoint;
-import com.monaum.Rapid_Global.module.personnel.user.UserService;
-import com.monaum.Rapid_Global.security.auth.LogoutService;
+import com.munni.telegram_app_backend.exception.CustomAccessDeniedHandler;
+import com.munni.telegram_app_backend.exception.CustomAuthenticationEntryPoint;
+import com.munni.telegram_app_backend.personnel.user.UserService;
+import com.munni.telegram_app_backend.security.auth.LogoutService;
 import jakarta.annotation.PostConstruct;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;

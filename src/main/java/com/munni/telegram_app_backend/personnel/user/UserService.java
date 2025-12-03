@@ -2,7 +2,9 @@ package com.munni.telegram_app_backend.personnel.user;
 
 
 import com.munni.telegram_app_backend.exception.CustomException;
+import com.munni.telegram_app_backend.personnel.role.Role;
 import com.munni.telegram_app_backend.personnel.role.RoleRepo;
+import com.munni.telegram_app_backend.security.UserDetailsImpl;
 import com.munni.telegram_app_backend.util.PaginationUtil;
 import com.munni.telegram_app_backend.util.ResponseUtils;
 import com.munni.telegram_app_backend.util.response.BaseApiResponseDTO;
@@ -32,7 +34,6 @@ public class UserService implements UserDetailsService {
 	@Autowired private UserRepo userRepo;
 	@Autowired private UserMapper userMapper;
 	@Autowired private RoleRepo roleRepo;
-	@Autowired private SecurityUtil securityUtil;
 
 	private final PasswordEncoder passwordEncoder;
 
@@ -66,9 +67,7 @@ public class UserService implements UserDetailsService {
 		if (userRepo.existsByUserName(dto.getUserName())) {
 			throw new CustomException("Username already exists: " + dto.getUserName(), HttpStatus.BAD_REQUEST);
 		}
-		if (userRepo.existsByEmail(dto.getEmail())) {
-			throw new CustomException("Email already exists: " + dto.getEmail(), HttpStatus.BAD_REQUEST);
-		}
+
 
 		Role role = roleRepo.findById(dto.getRoleId())
 				.orElseThrow(() -> new CustomException("Role not found with id: " + dto.getRoleId(), HttpStatus.NOT_FOUND));
@@ -93,11 +92,7 @@ public class UserService implements UserDetailsService {
 				throw new CustomException("Username already exists: " + dto.getUserName(), HttpStatus.BAD_REQUEST);
 			}
 		}
-		if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
-			if (userRepo.existsByEmail(dto.getEmail())) {
-				throw new CustomException("Email already exists: " + dto.getEmail(), HttpStatus.BAD_REQUEST);
-			}
-		}
+
 
 		Role role = roleRepo.findById(dto.getRoleId())
 				.orElseThrow(() -> new CustomException("Role not found with id: " + dto.getRoleId(), HttpStatus.NOT_FOUND));

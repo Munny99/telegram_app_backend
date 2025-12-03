@@ -1,4 +1,4 @@
-package com.munni.telegram_app_backend.withdrawal;
+package com.munni.telegram_app_backend.referral;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.munni.telegram_app_backend.personnel.user.User;
@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Entity
 @Data
-public class Withdrawal {
+public class Referral {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

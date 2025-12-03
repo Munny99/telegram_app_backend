@@ -1,5 +1,6 @@
 package com.munni.telegram_app_backend.task;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.munni.telegram_app_backend.enums.TaskStatus;
 import com.munni.telegram_app_backend.enums.TaskType;
 import com.munni.telegram_app_backend.personnel.user.User;
@@ -31,7 +32,7 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @ToString.Include
+    @JsonIgnore
     private User user;
 
 

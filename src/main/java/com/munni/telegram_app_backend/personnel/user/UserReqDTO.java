@@ -1,5 +1,6 @@
 package com.munni.telegram_app_backend.personnel.user;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -37,5 +38,11 @@ public class UserReqDTO {
     @Size(max = 50, message = "Username must not exceed 50 characters")
     private String userName;
 
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String password;
+
     private Long referredById;
+    private String email;
+    @NotNull(message = "Role ID is required")
+    private Long roleId;
 }
