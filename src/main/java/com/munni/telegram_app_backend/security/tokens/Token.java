@@ -1,6 +1,7 @@
 package com.munni.telegram_app_backend.security.tokens;
 
 
+import com.munni.telegram_app_backend.enums.TokenType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
