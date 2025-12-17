@@ -1,8 +1,8 @@
 package com.munni.telegram_app_backend.security.auth;
 
 
-import com.munni.telegram_app_backend.security.tokens.Token;
-import com.munni.telegram_app_backend.security.tokens.TokenRepo;
+import com.munni.telegram_app_backend.security.Token;
+import com.munni.telegram_app_backend.security.TokenRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;

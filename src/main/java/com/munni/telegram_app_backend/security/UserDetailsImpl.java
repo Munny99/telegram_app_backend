@@ -2,7 +2,7 @@ package com.munni.telegram_app_backend.security;
 
 
 
-import com.munni.telegram_app_backend.personnel.user.User;
+import com.munni.telegram_app_backend.module.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -35,7 +35,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getUserName();
+        return user.getUsername();
     }
 
     @Override

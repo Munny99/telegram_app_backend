@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .user-info {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .user-info h2 {
+            margin-top: 0;
+        }
+        .user-detail {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .label {
+            font-weight: bold;
+        }
+        .button {
+            background-color: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .button:hover {
+            opacity: 0.9;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #0088cc);
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #999999);
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="loading" class="loading">
+        <p>Loading your profile...</p>
+    </div>
+
+    <div id="error" class="error" style="display: none;"></div>
+
+    <div id="userProfile" style="display: none;">
+        <div class="user-info">
+            <h2>👤 Profile</h2>
+            <div class="user-detail">
+                <span class="label">Name:</span>
+                <span id="userName">-</span>
+            </div>
+            <div class="user-detail">
+                <span class="label">Telegram ID:</span>
+                <span id="telegramId">-</span>
+            </div>
+            <div class="user-detail">
+                <span class="label">Username:</span>
+                <span id="username">-</span>
+            </div>
+            <div class="user-detail">
+                <span class="label">Referral Code:</span>
+                <span id="referralCode">-</span>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalEarnings">$0</div>
+                <div class="stat-label">Total Earnings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pendingBalance">$0</div>
+                <div class="stat-label">Pending Balance</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="completedTasks">0</div>
+                <div class="stat-label">Completed Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalReferrals">0</div>
+                <div class="stat-label">Total Referrals</div>
+            </div>
+        </div>
+
+        <button class="button" onclick="refreshProfile()">🔄 Refresh Profile</button>
+    </div>
+</div>
+
+<script>
+    // Replace with your actual Spring Boot backend URL
+    const API_BASE_URL = '/api/telegram';
+
+    // Initialize Telegram Web App
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Set theme colors
+    document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
+    document.body.style.color = tg.themeParams.text_color || '#000000';
+
+    // Get init data from Telegram
+    const initData = tg.initData;
+
+    if (!initData) {
+        showError('This app must be opened from Telegram');
+    } else {
+        authenticateUser();
+    }
+
+    async function authenticateUser() {
+        try {
+            showLoading();
+
+            const response = await fetch(`${API_BASE_URL}/auth`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    initData: initData
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Authentication failed');
+            }
+
+            const userData = await response.json();
+            displayUserProfile(userData);
+
+        } catch (error) {
+            console.error('Authentication error:', error);
+            showError(error.message);
+        }
+    }
+
+    function displayUserProfile(userData) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'none';
+        document.getElementById('userProfile').style.display = 'block';
+
+        // Display user information
+        document.getElementById('userName').textContent =
+            `${userData.firstName} ${userData.lastName || ''}`.trim();
+        document.getElementById('telegramId').textContent = userData.telegramId;
+        document.getElementById('username').textContent = userData.userName || 'N/A';
+        document.getElementById('referralCode').textContent = userData.referralCode;
+
+        // Display statistics
+        document.getElementById('totalEarnings').textContent =
+            `$${parseFloat(userData.totalEarnings).toFixed(2)}`;
+        document.getElementById('pendingBalance').textContent =
+            `$${(userData.pendingBalance / 100).toFixed(2)}`;
+        document.getElementById('completedTasks').textContent =
+            `${userData.completedTasks}/${userData.totalTasks}`;
+        document.getElementById('totalReferrals').textContent = userData.totalReferrals;
+
+        // Notify Telegram that the app is ready
+        tg.ready();
+    }
+
+    function showLoading() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('error').style.display = 'none';
+        document.getElementById('userProfile').style.display = 'none';
+    }
+
+    function showError(message) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').textContent = message;
+        document.getElementById('userProfile').style.display = 'none';
+    }
+
+    function refreshProfile() {
+        authenticateUser();
+    }
+
+    // Optional: Handle Telegram back button
+    tg.BackButton.onClick(() => {
+        tg.close();
+    });
+</script>
+</body>
+</html>

@@ -2,9 +2,10 @@ package com.munni.telegram_app_backend.security;
 
 import com.munni.telegram_app_backend.exception.CustomAccessDeniedHandler;
 import com.munni.telegram_app_backend.exception.CustomAuthenticationEntryPoint;
-import com.munni.telegram_app_backend.personnel.user.UserService;
+import com.munni.telegram_app_backend.module.user.UserService;
 import com.munni.telegram_app_backend.security.auth.LogoutService;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +27,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.security.Security;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,92 +37,58 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfiguration {
 
-	@Autowired private UserService usersService;
-	@Autowired private JwtAuthenticationFilter jwtAuthFilter;
-	@Autowired private LogoutService logoutHandler;
-	@Autowired private CustomAccessDeniedHandler accessDeniedHandler;
-	@Autowired private CustomAuthenticationEntryPoint authenticationEntryPoint;
-
 	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-	private static final String[] WHITE_LIST_URL = new String[] {
-			"/api/auth/**",
-			"/api/ws/**",
-			"/api/notifications/**"
-	};
-
-	@PostConstruct
-	public void setupBouncyCastle() {
-		if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-			Security.addProvider(new BouncyCastleProvider());
-		}
-	}
-
-	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
-				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-				.csrf(csrf -> csrf.disable())
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(
-						auth -> auth.requestMatchers(WHITE_LIST_URL).permitAll()
-								.anyRequest().authenticated()
-				)
-				.exceptionHandling(
-						ex -> ex.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint)
-				)
-				.authenticationProvider(authenticationProvider())
-				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-				.logout(
-						l -> l.logoutUrl("/api/v1/auth/logout")
-								.addLogoutHandler(logoutHandler)
-								.logoutSuccessHandler(
-										(request, response, authentication) -> SecurityContextHolder.clearContext()
-								)
+				.csrf(csrf -> csrf.disable()) // Disable CSRF for API
+				.cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
+				.sessionManagement(session ->
+						session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless for API
+				.authorizeHttpRequests(auth -> auth
+						// Allow all Telegram API endpoints
+						.requestMatchers("/api/telegram/**").permitAll()
+
+						// Allow static resources and frontend
+						.requestMatchers("/", "/index.html", "/static/**", "/**/*.js", "/**/*.css", "/**/*.ico").permitAll()
+
+						// Allow actuator/health endpoints
+						.requestMatchers("/actuator/**", "/health/**").permitAll()
+
+						// Allow error endpoints
+						.requestMatchers("/error/**").permitAll()
+
+						// All other endpoints require authentication
+						.anyRequest().authenticated()
 				);
 
 		return http.build();
 	}
 
-	@Bean
-	AuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(usersService);
-		authenticationProvider.setPasswordEncoder(passwordEncoder());
-		return authenticationProvider;
-	}
-
 
 	@Bean
-	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-		return config.getAuthenticationManager();
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+
+		// Allow requests from Telegram and your frontend
+		configuration.setAllowedOrigins(Arrays.asList(
+				"https://web.telegram.org",
+				"http://localhost:3000",
+				"http://localhost:8080",
+				"http://localhost:9092",
+				"*" // For development only - remove in production
+		));
+
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		configuration.setAllowedHeaders(Arrays.asList("*"));
+		configuration.setAllowCredentials(false); // Set to false when using "*" origin
+		configuration.setMaxAge(3600L);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+
+		return source;
 	}
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-
-        // IMPORTANT: Use allowedOriginPatterns, NOT allowedOrigins
-        config.setAllowedOriginPatterns(List.of(
-                "*",                                // allow all (safe with JWT)
-                "http://localhost:4200",
-                "https://*.vercel.app",
-                "https://*.vercel.app/*",
-                "https://*.ngrok-free.dev",
-                "https://*.ngrok-free.app"
-        ));
-
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
-
-
 }

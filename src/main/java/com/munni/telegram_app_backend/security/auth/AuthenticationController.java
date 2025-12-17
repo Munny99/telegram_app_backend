@@ -3,6 +3,7 @@ package com.munni.telegram_app_backend.security.auth;
 import com.munni.telegram_app_backend.enums.ResponseStatusType;
 import com.munni.telegram_app_backend.model.ResponseBuilder;
 import com.munni.telegram_app_backend.model.SuccessResponse;
+import com.munni.telegram_app_backend.security.TelegramLoginRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,20 +26,29 @@ public class AuthenticationController {
 
 	private @Autowired AuthenticationService authenticationService;
 
-	@PostMapping("/register")
-	public ResponseEntity<SuccessResponse<AuthenticationResDto>> register(@RequestBody RegisterRequestDto request) {
-		AuthenticationResDto data = authenticationService.register(request);
-		return ResponseBuilder.build(ResponseStatusType.CREATE_SUCCESS, data);
-	}
+//	@PostMapping("/register")
+//	public ResponseEntity<SuccessResponse<AuthenticationResDto>> register(@RequestBody RegisterRequestDto request) {
+//		AuthenticationResDto data = authenticationService.register(request);
+//		return ResponseBuilder.build(ResponseStatusType.CREATE_SUCCESS, data);
+//	}
+//
+//	@PostMapping("/authenticate")
+//	public ResponseEntity<SuccessResponse<AuthenticationResDto>> authenticate(@RequestBody AuthenticationReqDto request) {
+//		AuthenticationResDto data = authenticationService.authenticate(request);
+//		return ResponseBuilder.build(ResponseStatusType.READ_SUCCESS, data);
+//	}
+//
+//	@PostMapping("/refresh-token")
+//	public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+//		authenticationService.refreshToken(request, response);
+//	}
 
-	@PostMapping("/authenticate")
-	public ResponseEntity<SuccessResponse<AuthenticationResDto>> authenticate(@RequestBody AuthenticationReqDto request) {
-		AuthenticationResDto data = authenticationService.authenticate(request);
+	@PostMapping("/telegram")
+	public ResponseEntity<SuccessResponse<AuthenticationResDto>> telegramLogin(
+			@RequestBody TelegramLoginRequestDto request
+	) {
+		AuthenticationResDto data = authenticationService.authenticateTelegram(request);
 		return ResponseBuilder.build(ResponseStatusType.READ_SUCCESS, data);
 	}
 
-	@PostMapping("/refresh-token")
-	public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		authenticationService.refreshToken(request, response);
-	}
 }
