@@ -96,15 +96,10 @@ public class MyTelegramBot extends TelegramLongPollingBot {
                         .firstName(tgUser.getFirstName())
                         .lastName(tgUser.getLastName() != null ? tgUser.getLastName() : "")
                         .userName(tgUser.getUserName())
-                        .email(
-                                tgUser.getUserName() != null
-                                        ? tgUser.getUserName() + "@telegram.local"
-                                        : "tg_" + tgUser.getId() + "@telegram.local"
-                        )
                         .password(null) // Telegram login → no password
                         .referralCode(generateReferralCode())
                         .totalEarnings(BigDecimal.ZERO)
-                        .totalWithdrawn(0L)
+                        .totalWithdrawn(BigDecimal.valueOf(0L))
                         .pendingBalance(0L)
                         .totalReferrals(0)
                         .completedTasks(0)

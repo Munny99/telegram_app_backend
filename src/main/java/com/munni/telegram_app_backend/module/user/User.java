@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.munni.telegram_app_backend.module.role.Role;
 import com.munni.telegram_app_backend.module.referral.Referral;
 import com.munni.telegram_app_backend.module.task.Task;
-import com.munni.telegram_app_backend.module.withdrawal.Withdrawal;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -52,8 +51,9 @@ public class User implements UserDetails {
 
 	@Column(nullable = false, precision = 20, scale = 2)
 	private BigDecimal totalEarnings;
+
 	@Column(nullable = false)
-	private Long totalWithdrawn = 0L;
+	private BigDecimal totalWithdrawn = BigDecimal.valueOf(0.0);
 
 	@Column(nullable = false)
 	private Long pendingBalance = 0L;
@@ -67,14 +67,14 @@ public class User implements UserDetails {
 	@Column(nullable = false)
 	private Integer totalTasks = 0;
 
-	private Integer rating;
+	private double rating;
 
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Task> tasks;
-
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	private List<Withdrawal> withdrawals;
+//
+//	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+//	private List<Withdrawal> withdrawals;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Referral> myReferrals;
@@ -84,9 +84,6 @@ public class User implements UserDetails {
 	private User referredBy;
 
 	private Boolean isActive = true;
-
-	@Column(name = "email", length = 255, unique = true, nullable = false)
-	private String email;
 
 	@JsonIgnore
 	@ManyToOne(fetch = FetchType.LAZY)

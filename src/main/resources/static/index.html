@@ -2,234 +2,649 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Task Rewards - Telegram Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
         }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
+        #root {
+            min-height: 100vh;
         }
-        .user-info {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .animate-spin {
+            animation: spin 1s linear infinite;
         }
-        .user-info h2 {
-            margin-top: 0;
-        }
-        .user-detail {
-            margin: 10px 0;
-            display: flex;
-            justify-content: space-between;
-        }
-        .label {
-            font-weight: bold;
-        }
-        .button {
-            background-color: var(--tg-theme-button-color, #0088cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-        .button:hover {
-            opacity: 0.9;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-        .error {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .stat-card {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--tg-theme-button-color, #0088cc);
-        }
-        .stat-label {
-            font-size: 12px;
-            color: var(--tg-theme-hint-color, #999999);
-            margin-top: 5px;
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div id="loading" class="loading">
-        <p>Loading your profile...</p>
-    </div>
+<div id="root"></div>
 
-    <div id="error" class="error" style="display: none;"></div>
+<script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
-    <div id="userProfile" style="display: none;">
-        <div class="user-info">
-            <h2>👤 Profile</h2>
-            <div class="user-detail">
-                <span class="label">Name:</span>
-                <span id="userName">-</span>
-            </div>
-            <div class="user-detail">
-                <span class="label">Telegram ID:</span>
-                <span id="telegramId">-</span>
-            </div>
-            <div class="user-detail">
-                <span class="label">Username:</span>
-                <span id="username">-</span>
-            </div>
-            <div class="user-detail">
-                <span class="label">Referral Code:</span>
-                <span id="referralCode">-</span>
-            </div>
-        </div>
+    const CheckCircle = () => (
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+        </svg>
+    );
 
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value" id="totalEarnings">$0</div>
-                <div class="stat-label">Total Earnings</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="pendingBalance">$0</div>
-                <div class="stat-label">Pending Balance</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="completedTasks">0</div>
-                <div class="stat-label">Completed Tasks</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalReferrals">0</div>
-                <div class="stat-label">Total Referrals</div>
-            </div>
-        </div>
+    const ExternalLink = () => (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+        </svg>
+    );
 
-        <button class="button" onclick="refreshProfile()">🔄 Refresh Profile</button>
-    </div>
-</div>
+    const Clock = () => (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+    );
 
-<script>
-    // Replace with your actual Spring Boot backend URL
-    const API_BASE_URL = '/api/telegram';
+    const Gift = () => (
+        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+        </svg>
+    );
 
-    // Initialize Telegram Web App
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const DollarSign = () => (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+    );
 
-    // Set theme colors
-    document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
-    document.body.style.color = tg.themeParams.text_color || '#000000';
+    const Trophy = () => (
+        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+        </svg>
+    );
 
-    // Get init data from Telegram
-    const initData = tg.initData;
+    const Users = () => (
+        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+        </svg>
+    );
 
-    if (!initData) {
-        showError('This app must be opened from Telegram');
-    } else {
-        authenticateUser();
-    }
+    const Refresh = () => (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+    );
 
-    async function authenticateUser() {
-        try {
-            showLoading();
+    const TelegramTaskApp = () => {
+        const [user, setUser] = useState(null);
+        const [tasks, setTasks] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [refreshing, setRefreshing] = useState(false);
+        const [error, setError] = useState(null);
+        const [activeTab, setActiveTab] = useState('tasks');
+        const [processingTasks, setProcessingTasks] = useState({});
+        const [countdown, setCountdown] = useState({});
 
-            const response = await fetch(`${API_BASE_URL}/auth`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    initData: initData
-                })
-            });
+        const API_BASE_URL = '/api/telegram';
+        const tg = window.Telegram?.WebApp;
+        const timersRef = useRef({});
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Authentication failed');
+        useEffect(() => {
+            if (tg) {
+                tg.expand();
+                tg.ready();
+            }
+            authenticateUser();
+
+            return () => {
+                Object.values(timersRef.current).forEach(timer => clearInterval(timer));
+            };
+        }, []);
+
+        const authenticateUser = async () => {
+            try {
+                setLoading(true);
+                const initData = tg?.initData || '';
+
+                if (!initData) {
+                    throw new Error('This app must be opened from Telegram');
+                }
+
+                const response = await fetch(`${API_BASE_URL}/auth`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ initData })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Authentication failed');
+                }
+
+                const userData = await response.json();
+                setUser(userData);
+                await fetchTasks(initData);
+
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchTasks = async (initData) => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks`, {
+                    headers: {
+                        'X-Telegram-Init-Data': initData
+                    }
+                });
+
+                if (response.ok) {
+                    const tasksData = await response.json();
+                    setTasks(tasksData);
+                }
+            } catch (err) {
+                console.error('Failed to fetch tasks:', err);
+            }
+        };
+
+        const refreshData = async () => {
+            try {
+                setRefreshing(true);
+                const initData = tg?.initData || '';
+                await fetchTasks(initData);
+
+                const response = await fetch(`${API_BASE_URL}/me`, {
+                    headers: {
+                        'X-Telegram-Init-Data': initData
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    setUser(userData);
+                }
+
+                if (tg) {
+                    tg.showAlert('✅ Data refreshed successfully!');
+                }
+            } catch (err) {
+                console.error('Failed to refresh:', err);
+            } finally {
+                setRefreshing(false);
+            }
+        };
+
+        const startCountdown = (taskId, seconds) => {
+            if (timersRef.current[taskId]) {
+                clearInterval(timersRef.current[taskId]);
             }
 
-            const userData = await response.json();
-            displayUserProfile(userData);
+            setCountdown(prev => ({ ...prev, [taskId]: seconds }));
 
-        } catch (error) {
-            console.error('Authentication error:', error);
-            showError(error.message);
+            timersRef.current[taskId] = setInterval(() => {
+                setCountdown(prev => {
+                    const newCount = (prev[taskId] || 0) - 1;
+                    if (newCount <= 0) {
+                        clearInterval(timersRef.current[taskId]);
+                        delete timersRef.current[taskId];
+                        return { ...prev, [taskId]: 0 };
+                    }
+                    return { ...prev, [taskId]: newCount };
+                });
+            }, 1000);
+        };
+
+        const handleTaskAction = async (task) => {
+            if (task.status === 'COMPLETED') return;
+            if (processingTasks[task.id]) return;
+
+            setProcessingTasks(prev => ({ ...prev, [task.id]: 'starting' }));
+
+            try {
+                const initData = tg?.initData || '';
+
+                // Start the task
+                const startResponse = await fetch(`${API_BASE_URL}/tasks/${task.id}/start`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Telegram-Init-Data': initData
+                    }
+                });
+
+                if (!startResponse.ok) {
+                    throw new Error('Failed to start task');
+                }
+
+                // Open the task link
+                if (task.taskLink) {
+                    if (tg) {
+                        tg.openLink(task.taskLink);
+                    } else {
+                        window.open(task.taskLink, '_blank');
+                    }
+                }
+
+                // Task started - user needs to manually verify
+                setProcessingTasks(prev => ({ ...prev, [task.id]: 'ready' }));
+
+            } catch (err) {
+                console.error('Failed to start task:', err);
+                setProcessingTasks(prev => {
+                    const newState = { ...prev };
+                    delete newState[task.id];
+                    return newState;
+                });
+                if (tg) {
+                    tg.showAlert('Failed to start task. Please try again.');
+                }
+            }
+        };
+
+        const verifyTask = async (taskId) => {
+            setProcessingTasks(prev => ({ ...prev, [taskId]: 'verifying' }));
+
+            try {
+                const initData = tg?.initData || '';
+
+                const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Telegram-Init-Data': initData
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const updatedTask = data;
+
+                    setTasks(tasks.map(t => t.id === taskId ? updatedTask : t));
+
+                    if (updatedTask.status === 'COMPLETED') {
+                        setUser(prev => ({
+                            ...prev,
+                            totalEarnings: parseFloat(prev.totalEarnings) + parseFloat(updatedTask.rewardAmount),
+                            completedTasks: prev.completedTasks + 1,
+                            pendingBalance: prev.pendingBalance + (parseFloat(updatedTask.rewardAmount) * 100)
+                        }));
+
+                        if (tg) {
+                            tg.showAlert(`🎉 Task completed! You earned $${parseFloat(updatedTask.rewardAmount).toFixed(2)}`);
+                        }
+                    }
+                } else {
+                    if (tg) {
+                        tg.showAlert(data.error || 'Verification failed. Please make sure you completed the task.');
+                    }
+                }
+            } catch (err) {
+                console.error('Task verification failed:', err);
+                if (tg) {
+                    tg.showAlert('Verification failed. Please try again later.');
+                }
+            } finally {
+                setProcessingTasks(prev => {
+                    const newState = { ...prev };
+                    delete newState[taskId];
+                    return newState;
+                });
+                setCountdown(prev => {
+                    const newState = { ...prev };
+                    delete newState[taskId];
+                    return newState;
+                });
+            }
+        };
+
+        const getTaskIcon = (taskType) => {
+            switch (taskType) {
+                case 'TELEGRAM_CHANNEL':
+                    return '📢';
+                case 'YOUTUBE':
+                    return '▶️';
+                case 'CUSTOM_LINK':
+                    return '🔗';
+                default:
+                    return '📋';
+            }
+        };
+
+        const getTaskButton = (task) => {
+            const processing = processingTasks[task.id];
+
+            if (task.status === 'COMPLETED') {
+                return (
+                    <div className="flex items-center gap-1 text-green-600 text-sm bg-green-50 px-3 py-1 rounded-full">
+                        <CheckCircle />
+                        <span>Completed</span>
+                    </div>
+                );
+            }
+
+            if (processing === 'starting') {
+                return (
+                    <button disabled className="bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        <span>Opening...</span>
+                    </button>
+                );
+            }
+
+            if (processing === 'ready') {
+                return (
+                    <button
+                        onClick={() => verifyTask(task.id)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors animate-pulse"
+                    >
+                        <CheckCircle />
+                        <span>Verify Task</span>
+                    </button>
+                );
+            }
+
+            if (processing === 'verifying') {
+                return (
+                    <button disabled className="bg-blue-400 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        <span>Verifying...</span>
+                    </button>
+                );
+            }
+
+            return (
+                <button
+                    onClick={() => handleTaskAction(task)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+                >
+                    <span>Start Task</span>
+                    <ExternalLink />
+                </button>
+            );
+        };
+
+        if (loading) {
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                        <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+                    </div>
+                </div>
+            );
         }
-    }
 
-    function displayUserProfile(userData) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('error').style.display = 'none';
-        document.getElementById('userProfile').style.display = 'block';
+        if (error) {
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+                        <h3 className="text-red-800 font-semibold mb-2">⚠️ Error</h3>
+                        <p className="text-red-600">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg w-full"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                </div>
+            );
+        }
 
-        // Display user information
-        document.getElementById('userName').textContent =
-            `${userData.firstName} ${userData.lastName || ''}`.trim();
-        document.getElementById('telegramId').textContent = userData.telegramId;
-        document.getElementById('username').textContent = userData.userName || 'N/A';
-        document.getElementById('referralCode').textContent = userData.referralCode;
+        const pendingTasks = tasks.filter(t => t.status === 'PENDING');
+        const completedTasks = tasks.filter(t => t.status === 'COMPLETED');
 
-        // Display statistics
-        document.getElementById('totalEarnings').textContent =
-            `$${parseFloat(userData.totalEarnings).toFixed(2)}`;
-        document.getElementById('pendingBalance').textContent =
-            `$${(userData.pendingBalance / 100).toFixed(2)}`;
-        document.getElementById('completedTasks').textContent =
-            `${userData.completedTasks}/${userData.totalTasks}`;
-        document.getElementById('totalReferrals').textContent = userData.totalReferrals;
+        return (
+            <div className="min-h-screen bg-gray-50">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="flex justify-between items-start mb-4">
+                            <h1 className="text-2xl font-bold">👋 Hi, {user?.firstName}!</h1>
+                            <button
+                                onClick={refreshData}
+                                disabled={refreshing}
+                                className="bg-white/20 backdrop-blur rounded-lg px-3 py-2 flex items-center gap-2 hover:bg-white/30 transition-colors disabled:opacity-50"
+                            >
+                                <div className={refreshing ? 'animate-spin' : ''}>
+                                    <Refresh />
+                                </div>
+                                <span className="text-sm">Refresh</span>
+                            </button>
+                        </div>
+                        <div className="flex gap-4">
+                            <div className="bg-white/20 backdrop-blur rounded-lg px-4 py-2 flex-1">
+                                <div className="text-xs opacity-80">Total Earnings</div>
+                                <div className="text-xl font-bold">${parseFloat(user?.totalEarnings || 0).toFixed(2)}</div>
+                            </div>
+                            <div className="bg-white/20 backdrop-blur rounded-lg px-4 py-2 flex-1">
+                                <div className="text-xs opacity-80">Pending</div>
+                                <div className="text-xl font-bold">${((user?.pendingBalance || 0) / 100).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        // Notify Telegram that the app is ready
-        tg.ready();
-    }
+                <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
+                    <div className="max-w-4xl mx-auto flex">
+                        <button
+                            onClick={() => setActiveTab('tasks')}
+                            className={`flex-1 py-4 px-6 font-semibold transition-colors ${
+                                activeTab === 'tasks'
+                                    ? 'text-blue-600 border-b-2 border-blue-600'
+                                    : 'text-gray-600 hover:text-gray-800'
+                            }`}
+                        >
+                            📋 Tasks ({pendingTasks.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('completed')}
+                            className={`flex-1 py-4 px-6 font-semibold transition-colors ${
+                                activeTab === 'completed'
+                                    ? 'text-blue-600 border-b-2 border-blue-600'
+                                    : 'text-gray-600 hover:text-gray-800'
+                            }`}
+                        >
+                            ✅ Completed ({completedTasks.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            className={`flex-1 py-4 px-6 font-semibold transition-colors ${
+                                activeTab === 'profile'
+                                    ? 'text-blue-600 border-b-2 border-blue-600'
+                                    : 'text-gray-600 hover:text-gray-800'
+                            }`}
+                        >
+                            👤 Profile
+                        </button>
+                    </div>
+                </div>
 
-    function showLoading() {
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('error').style.display = 'none';
-        document.getElementById('userProfile').style.display = 'none';
-    }
+                <div className="max-w-4xl mx-auto p-4 pb-20">
+                    {activeTab === 'tasks' && (
+                        <div className="space-y-4">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                <p className="text-sm text-blue-800">
+                                    ℹ️ <strong>How it works:</strong> Click "Start Task" to open the channel/link,
+                                    complete the action (join channel, subscribe, etc.), then click "Verify Task" to check and claim your reward.
+                                </p>
+                            </div>
 
-    function showError(message) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('error').style.display = 'block';
-        document.getElementById('error').textContent = message;
-        document.getElementById('userProfile').style.display = 'none';
-    }
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-gray-800">Available Tasks</h2>
+                                <span className="text-sm text-gray-600">
+                                    {pendingTasks.length} tasks remaining
+                                </span>
+                            </div>
 
-    function refreshProfile() {
-        authenticateUser();
-    }
+                            {pendingTasks.length === 0 ? (
+                                <div className="bg-white rounded-lg p-8 text-center">
+                                    <div className="flex justify-center mb-4">
+                                        <Gift />
+                                    </div>
+                                    <p className="text-gray-500 mb-2">🎉 All tasks completed!</p>
+                                    <p className="text-sm text-gray-400">Check back later for new tasks</p>
+                                </div>
+                            ) : (
+                                pendingTasks.map((task) => (
+                                    <div
+                                        key={task.id}
+                                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className="text-3xl">{getTaskIcon(task.taskType)}</div>
 
-    // Optional: Handle Telegram back button
-    tg.BackButton.onClick(() => {
-        tg.close();
-    });
+                                            <div className="flex-1">
+                                                <h3 className="font-semibold text-gray-800 mb-1">{task.taskTitle}</h3>
+
+                                                {task.taskDescription && (
+                                                    <p className="text-sm text-gray-600 mb-3">{task.taskDescription}</p>
+                                                )}
+
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2 text-green-600 font-semibold">
+                                                        <DollarSign />
+                                                        <span>${parseFloat(task.rewardAmount).toFixed(2)}</span>
+                                                    </div>
+
+                                                    {getTaskButton(task)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'completed' && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-gray-800">Completed Tasks</h2>
+                                <span className="text-sm text-gray-600">
+                                    {completedTasks.length} completed
+                                </span>
+                            </div>
+
+                            {completedTasks.length === 0 ? (
+                                <div className="bg-white rounded-lg p-8 text-center">
+                                    <p className="text-gray-500">No completed tasks yet</p>
+                                    <p className="text-sm text-gray-400 mt-2">Start completing tasks to earn rewards!</p>
+                                </div>
+                            ) : (
+                                completedTasks.map((task) => (
+                                    <div
+                                        key={task.id}
+                                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 opacity-75"
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className="text-3xl">{getTaskIcon(task.taskType)}</div>
+
+                                            <div className="flex-1">
+                                                <h3 className="font-semibold text-gray-800 mb-1">{task.taskTitle}</h3>
+
+                                                {task.taskDescription && (
+                                                    <p className="text-sm text-gray-600 mb-3">{task.taskDescription}</p>
+                                                )}
+
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2 text-green-600 font-semibold">
+                                                        <DollarSign />
+                                                        <span>${parseFloat(task.rewardAmount).toFixed(2)}</span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-1 text-green-600 text-sm bg-green-50 px-3 py-1 rounded-full">
+                                                        <CheckCircle />
+                                                        <span>Completed</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'profile' && (
+                        <div className="space-y-4">
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-xl font-bold text-gray-800 mb-4">Profile Information</h2>
+
+                                <div className="space-y-3">
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-gray-600">Name</span>
+                                        <span className="font-semibold">{user?.firstName} {user?.lastName || ''}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-gray-600">Username</span>
+                                        <span className="font-semibold">@{user?.userName || 'N/A'}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-gray-600">Telegram ID</span>
+                                        <span className="font-semibold">{user?.telegramId}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b">
+                                        <span className="text-gray-600">Referral Code</span>
+                                        <span className="font-semibold text-blue-600">{user?.referralCode}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+                                    <div className="flex justify-center mb-2 text-yellow-500">
+                                        <Trophy />
+                                    </div>
+                                    <div className="text-2xl font-bold text-gray-800">
+                                        {user?.completedTasks || 0}/{user?.totalTasks || 0}
+                                    </div>
+                                    <div className="text-sm text-gray-600">Tasks Completed</div>
+                                </div>
+
+                                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+                                    <div className="flex justify-center mb-2 text-purple-500">
+                                        <Users />
+                                    </div>
+                                    <div className="text-2xl font-bold text-gray-800">{user?.totalReferrals || 0}</div>
+                                    <div className="text-sm text-gray-600">Referrals</div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-white">
+                                <h3 className="text-lg font-bold mb-2">💰 Earnings Summary</h3>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between">
+                                        <span className="opacity-90">Total Earned:</span>
+                                        <span className="font-bold">${parseFloat(user?.totalEarnings || 0).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="opacity-90">Total Withdrawn:</span>
+                                <span className="font-bold">${parseFloat(user?.totalWithdrawn || 0).toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between pt-2 border-t border-white/20">
+                                <span className="opacity-90">Available Balance:</span>
+                                <span className="font-bold text-xl">${((user?.pendingBalance || 0) / 100).toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    </div>
+);
+};
+
+ReactDOM.render(<TelegramTaskApp />, document.getElementById('root'));
 </script>
 </body>
 </html>

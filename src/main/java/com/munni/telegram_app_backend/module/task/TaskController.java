@@ -14,46 +14,46 @@ import org.springframework.web.bind.annotation.*;
 public class TaskController {
     @Autowired TaskService service;
 
-    @GetMapping
-    public ResponseEntity<BaseApiResponseDTO<?>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ){
-        Pageable pageable = PageRequest.of(page, size, Sort.by("sqn").ascending());
-
-        return service.getAll(pageable);
-    }
-
-    @PostMapping
-    public ResponseEntity<BaseApiResponseDTO<?>> create(
-            @Valid @RequestBody TaskReqDto req
-    ){
-        return service.create(req);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<BaseApiResponseDTO<?>> getById(
-            @PathVariable Long id
-    ){
-        return service.getById(id);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<BaseApiResponseDTO<?>> update(
-            @PathVariable Long id,
-            @Valid @RequestBody TaskReqDto req
-    ){
-        return service.update(id, req);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<BaseApiResponseDTO<?>> delete(
-            @PathVariable Long id
-    ){
-        return service.delete(id);
-    }
-
-
+//    @GetMapping
+//    public ResponseEntity<BaseApiResponseDTO<?>> getAll(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size
+//    ){
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("sqn").ascending());
+//
+//        return service.getAll(pageable);
+//    }
+//
+//    @PostMapping
+//    public ResponseEntity<BaseApiResponseDTO<?>> create(
+//            @Valid @RequestBody TaskReqDto req
+//    ){
+//        return service.create(req);
+//    }
+//
+//    @GetMapping("/{id}")
+//    public ResponseEntity<BaseApiResponseDTO<?>> getById(
+//            @PathVariable Long id
+//    ){
+//        return service.getById(id);
+//    }
+//
+//    @PutMapping("/{id}")
+//    public ResponseEntity<BaseApiResponseDTO<?>> update(
+//            @PathVariable Long id,
+//            @Valid @RequestBody TaskReqDto req
+//    ){
+//        return service.update(id, req);
+//    }
+//
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<BaseApiResponseDTO<?>> delete(
+//            @PathVariable Long id
+//    ){
+//        return service.delete(id);
+//    }
+//
+//
 
 
 }
