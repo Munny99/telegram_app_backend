@@ -3,6 +3,7 @@ package com.munni.telegram_app_backend.security.telegram;
 import com.munni.telegram_app_backend.module.task.GlobalTask;
 import com.munni.telegram_app_backend.module.task.GlobalTaskService;
 import com.munni.telegram_app_backend.module.task.TelegramBotService;
+import com.munni.telegram_app_backend.module.task.TelegramManualApprovalService;
 import com.munni.telegram_app_backend.module.user.User;
 import com.munni.telegram_app_backend.module.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class TelegramController {
     private final TelegramAuthService telegramAuthService;
     private final UserService userService;
     private final GlobalTaskService globalTaskService;
+    private final TelegramManualApprovalService manualApprovalService;
     private final TelegramBotService telegramBotService;
 
     @PostMapping("/auth")
@@ -193,6 +195,53 @@ public class TelegramController {
     }
 
     // ==================== DEBUG ENDPOINTS ====================
+
+    /**
+     * Get channel ID from your bot (for private channels)
+     * Use this to find the chat ID of your private channel
+     */
+    @GetMapping("/debug/get-channel-id/{channelUsername}")
+    public ResponseEntity<?> getChannelId(@PathVariable String channelUsername) {
+        try {
+            TelegramManualApprovalService.ChannelInfo info =
+                    manualApprovalService.getChannelInfo("@" + channelUsername);
+
+            if (info != null) {
+                return ResponseEntity.ok(info);
+            } else {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("Could not get channel info. Make sure bot is admin."));
+            }
+        } catch (Exception e) {
+            log.error("Error getting channel ID", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Error: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Test private channel membership
+     */
+    @GetMapping("/debug/check-private-membership/{chatId}/{userId}")
+    public ResponseEntity<?> testPrivateMembership(
+            @PathVariable String chatId,
+            @PathVariable String userId) {
+        try {
+            boolean isMember = manualApprovalService.isUserMemberOfPrivateChannel(chatId, userId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("chatId", chatId);
+            response.put("userId", userId);
+            response.put("isMember", isMember);
+            response.put("message", isMember ? "User is a member" : "User is NOT a member or not approved yet");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error testing private membership", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Error: " + e.getMessage()));
+        }
+    }
 
     /**
      * Test bot configuration

@@ -50,6 +50,12 @@ public class GlobalTask {
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    @Column
+    private Boolean requiresVerification = true; // New field: can bot verify this task?
+
+    @Column(length = 500)
+    private String verificationNote; // Note about verification status
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

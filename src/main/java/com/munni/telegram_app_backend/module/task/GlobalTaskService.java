@@ -28,8 +28,7 @@ public class GlobalTaskService {
     private final UserRepo userRepository;
     private final TelegramBotService telegramBotService;
 
-    private static final int MAX_VERIFICATION_ATTEMPTS = 3;
-    private static final int MIN_WAIT_SECONDS = 5;
+    private static final int MIN_WAIT_SECONDS = 12;
 
     /**
      * Get all active global tasks with user's completion status
@@ -126,11 +125,6 @@ public class GlobalTaskService {
             return createTaskDTO(globalTask, TaskStatus.COMPLETED);
         }
 
-        // Check verification attempts limit
-        if (progress.getVerificationAttempts() >= MAX_VERIFICATION_ATTEMPTS) {
-            throw new RuntimeException("Maximum verification attempts reached. Please restart the task.");
-        }
-
         // Increment verification attempts
         progress.setVerificationAttempts(progress.getVerificationAttempts() + 1);
         userTaskProgressRepository.save(progress);
@@ -152,11 +146,8 @@ public class GlobalTaskService {
 
         if (!isVerified) {
             log.warn("Task {} verification FAILED for user {} (attempt {}/{})",
-                    taskId, userId, progress.getVerificationAttempts(), MAX_VERIFICATION_ATTEMPTS);
-            throw new RuntimeException(String.format(
-                    "Verification failed. Please make sure you completed the task. Attempts remaining: %d",
-                    MAX_VERIFICATION_ATTEMPTS - progress.getVerificationAttempts()
-            ));
+                    taskId, userId, progress.getVerificationAttempts());
+            throw new RuntimeException("Verification failed. Please make sure you completed the task");
         }
 
         // Mark as completed
@@ -216,6 +207,12 @@ public class GlobalTaskService {
         if (channelUsername == null) {
             log.error("Could not extract channel username from link: {}", task.getTaskLink());
             throw new RuntimeException("Invalid channel link configuration. Please contact support.");
+        }
+
+        // Check if this task requires verification
+        if (task.getRequiresVerification() != null && !task.getRequiresVerification()) {
+            log.info("⚠️ Task {} does not require verification (trust-based)", task.getId());
+            return true; // Trust that user completed it
         }
 
         // CRITICAL: Check if user is ACTUALLY a member of the channel

@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 @Service
 public class TelegramBotService {
 
-    @Value("${telegram.bot.token}")
+    @Value("${telegram.bot.token:}")
     private String botToken;
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -73,11 +73,22 @@ public class TelegramBotService {
             }
 
         } catch (HttpClientErrorException.BadRequest e) {
+            String errorBody = e.getResponseBodyAsString();
             log.error("❌ Bad Request (400) - Possible reasons:");
             log.error("   1. User is not a member of the channel");
             log.error("   2. Bot is not added as admin to the channel");
             log.error("   3. Channel username is incorrect");
-            log.error("   Error details: {}", e.getResponseBodyAsString());
+            log.error("   Error details: {}", errorBody);
+
+            // Check if error is "member list is inaccessible"
+            if (errorBody.contains("member list is inaccessible")) {
+                log.warn("⚠️ Cannot verify membership for channel {} (bot not admin)", channelUsername);
+                log.warn("⚠️ Accepting task by default for unverifiable channels");
+                // OPTION: Return true to auto-accept, or false to reject
+                // For now, we'll assume user completed it (trust-based)
+                return true; // Change to false if you want to reject unverifiable channels
+            }
+
             return false;
 
         } catch (HttpClientErrorException.Unauthorized e) {
