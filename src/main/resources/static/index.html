@@ -2,31 +2,23 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>টাস্ক রিওয়ার্ড - Telegram Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>হোম - Telegram Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
             background: #1a1a2e;
-            color: #ffffff;
+            color: #fff;
             font-family: 'Noto Sans Bengali', sans-serif;
             overflow-x: hidden;
         }
 
-        .min-h-screen {
+        .home-container {
             min-height: 100vh;
             background: #1a1a2e;
             padding-bottom: 80px;
@@ -47,14 +39,10 @@
             margin-bottom: 20px;
         }
 
-        .welcome-text {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
+        .welcome-text { font-size: 0.9rem; color: rgba(255, 255, 255, 0.8); }
 
         .notification-icon {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             display: flex;
@@ -62,17 +50,14 @@
             justify-content: center;
             font-size: 1.2rem;
             cursor: pointer;
+            transition: all 0.3s;
         }
+        .notification-icon:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.1); }
 
-        .profile-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .profile-section { display: flex; align-items: center; gap: 15px; }
 
         .avatar {
-            width: 70px;
-            height: 70px;
+            width: 70px; height: 70px;
             border-radius: 20px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -83,20 +68,9 @@
             font-weight: 700;
         }
 
-        .profile-details h2 {
-            font-size: 1.4rem;
-            margin-bottom: 5px;
-        }
-
-        .verified {
-            color: #4ade80;
-            font-size: 1rem;
-        }
-
-        .user-id {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
+        .profile-details h2 { font-size: 1.4rem; margin-bottom: 5px; }
+        .verified { color: #4ade80; font-size: 1rem; }
+        .user-id { font-size: 0.85rem; color: rgba(255, 255, 255, 0.7); }
 
         /* Balance Card */
         .balance-card {
@@ -108,33 +82,16 @@
             position: relative;
             overflow: hidden;
         }
-
         .balance-card::before {
             content: '💰';
             position: absolute;
             font-size: 120px;
-            right: -20px;
-            top: -30px;
+            right: -20px; top: -30px;
             opacity: 0.1;
         }
-
-        .balance-label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 8px;
-        }
-
-        .balance-amount {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .balance-actions {
-            display: flex;
-            gap: 10px;
-        }
-
+        .balance-label { font-size: 0.9rem; color: rgba(255, 255, 255, 0.9); margin-bottom: 8px; }
+        .balance-amount { font-size: 2.5rem; font-weight: 700; margin-bottom: 15px; }
+        .balance-actions { display: flex; gap: 10px; }
         .balance-btn {
             flex: 1;
             background: rgba(255, 255, 255, 0.2);
@@ -148,11 +105,7 @@
             backdrop-filter: blur(10px);
             font-family: 'Noto Sans Bengali', sans-serif;
         }
-
-        .balance-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
+        .balance-btn:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
 
         /* Stats Grid */
         .stats-grid {
@@ -162,7 +115,6 @@
             padding: 0 20px;
             margin-bottom: 20px;
         }
-
         .stat-box {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             border-radius: 20px;
@@ -171,226 +123,130 @@
             box-shadow: 0 5px 20px rgba(30, 60, 114, 0.3);
             transition: all 0.3s;
         }
-
-        .stat-box:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(30, 60, 114, 0.5);
-        }
-
+        .stat-box:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(30, 60, 114, 0.5); }
         .stat-icon {
             font-size: 2rem;
             margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: #4ade80; margin-bottom: 5px; }
+        .stat-label { font-size: 0.85rem; color: rgba(255, 255, 255, 0.8); }
+        .progress-bar {
+            width: 100%; height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            border-radius: 10px;
+            transition: width 0.5s ease;
         }
 
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #4ade80;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Task History */
-        .call-history {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            border-radius: 20px;
-            padding: 20px;
-            margin: 0 20px 20px;
-            box-shadow: 0 10px 30px rgba(30, 60, 114, 0.3);
-        }
-
-        .call-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .call-header h2 {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .call-header span {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #4ade80;
-        }
-
-        .call-box {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            backdrop-filter: blur(10px);
-        }
-
-        /* Telegram Tasks */
-        .telegram-section {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin: 0 20px 20px;
-        }
-
-        .telegram-card {
+        /* Referral Card */
+        .referral-card {
             background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
             border-radius: 25px;
-            padding: 24px;
+            padding: 25px;
+            margin: 0 20px 20px;
             box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
             position: relative;
             overflow: hidden;
         }
-
-        .telegram-card::before {
-            content: '✈️';
+        .referral-card::before {
+            content: '🎁';
             position: absolute;
             font-size: 100px;
-            right: -10px;
-            top: -20px;
+            right: -10px; top: -20px;
             opacity: 0.15;
         }
-
-        .telegram-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-
-        .telegram-icon {
-            width: 64px;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
+        .referral-title {
+            font-size: 1.3rem;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 2rem;
-            backdrop-filter: blur(10px);
+            gap: 10px;
+            margin-bottom: 10px;
         }
-
-        .telegram-card h3 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .telegram-card p {
+        .referral-description {
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.95);
             margin-bottom: 15px;
             line-height: 1.5;
         }
-
-        .reward {
+        .bonus-badge {
+            display: inline-block;
             background: rgba(255, 255, 255, 0.25);
-            border-radius: 12px;
-            padding: 10px 15px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
+            padding: 8px 15px;
+            border-radius: 20px;
             font-weight: 700;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
         }
-
-        .button-group {
+        .link-container {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .link-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .copy-btn:hover { background: rgba(255, 255, 255, 0.5); transform: rotate(10deg); }
+        .share-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
         }
-
-        .btn-secondary,
-        .btn-primary {
+        .share-btn {
+            background: rgba(255, 255, 255, 0.2);
             border: none;
-            padding: 12px 15px;
+            padding: 12px;
             border-radius: 12px;
+            color: #fff;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            font-family: 'Noto Sans Bengali', sans-serif;
+            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            font-size: 0.9rem;
+            font-family: 'Noto Sans Bengali', sans-serif;
         }
+        .share-btn:hover { background: rgba(255, 255, 255, 0.35); transform: translateY(-2px); }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            background: rgba(255, 255, 255, 0.9);
-            color: #4ecdc4;
-        }
-
-        .btn-primary:hover {
-            background: #ffffff;
-            transform: translateY(-2px);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-completed {
-            background: rgba(74, 222, 128, 0.2) !important;
-            color: #4ade80 !important;
-            cursor: default !important;
-        }
-
-        .btn-completed:hover {
-            transform: none !important;
-        }
-
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #4ade80;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Bottom Navigation */
+        /* Bottom Nav */
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            bottom: 0; left: 0; width: 100%;
             background: rgba(10, 14, 39, 0.95);
             backdrop-filter: blur(20px);
             border-top: 1px solid rgba(78, 205, 196, 0.2);
@@ -400,7 +256,6 @@
             z-index: 100;
             box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
         }
-
         .nav-item {
             display: flex;
             flex-direction: column;
@@ -413,31 +268,26 @@
             padding: 5px 15px;
             border-radius: 12px;
         }
+        .nav-icon { font-size: 1.5rem; }
+        .nav-item.active { color: #ff6b6b; }
+        .nav-item.active .nav-icon { transform: scale(1.2); }
+        .nav-item:hover { color: #ff6b6b; }
 
-        .nav-icon {
-            font-size: 1.5rem;
-        }
-
-        .nav-item.active {
-            color: #ff6b6b;
-        }
-
-        .nav-item.active .nav-icon {
-            transform: scale(1.2);
-        }
-
-        .nav-item:hover {
-            color: #ff6b6b;
-        }
-
-        .error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px;
-            color: #fca5a5;
+        .loading {
             text-align: center;
+            padding: 40px;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #4ade80;
+            border-radius: 50%;
+            width: 50px; height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -447,13 +297,10 @@
 <script type="text/babel">
     const { useState, useEffect } = React;
 
-    const TelegramTaskApp = () => {
+    const HomePage = () => {
         const [user, setUser] = useState(null);
-        const [tasks, setTasks] = useState([]);
         const [loading, setLoading] = useState(true);
-        const [error, setError] = useState(null);
-        const [processingTasks, setProcessingTasks] = useState({});
-        const [activeNav, setActiveNav] = useState('task');
+        const [activeNav, setActiveNav] = useState('home');
 
         const API_BASE_URL = '/api/telegram';
         const tg = window.Telegram?.WebApp;
@@ -471,139 +318,45 @@
                 setLoading(true);
                 const initData = tg?.initData || '';
 
-                if (!initData) {
-                    throw new Error('এই অ্যাপটি অবশ্যই Telegram থেকে খুলতে হবে');
-                }
-
                 const response = await fetch(`${API_BASE_URL}/auth`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ initData })
                 });
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Authentication failed');
+                if (response.ok) {
+                    const userData = await response.json();
+                    setUser(userData);
                 }
-
-                const userData = await response.json();
-                setUser(userData);
-                await fetchTasks(initData);
-
             } catch (err) {
-                setError(err.message);
+                console.error('Auth error:', err);
             } finally {
                 setLoading(false);
             }
         };
 
-        const fetchTasks = async (initData) => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/tasks`, {
-                    headers: { 'X-Telegram-Init-Data': initData }
-                });
-
-                if (response.ok) {
-                    const tasksData = await response.json();
-                    setTasks(tasksData);
-                }
-            } catch (err) {
-                console.error('Failed to fetch tasks:', err);
+        const copyLink = () => {
+            const referralLink = `https://t.me/your_bot?start=${user?.referralCode}`;
+            navigator.clipboard.writeText(referralLink);
+            if (tg) {
+                tg.showAlert('লিংক কপি হয়েছে! ✅');
             }
         };
 
-        const handleStartTask = async (task) => {
-            if (task.status === 'COMPLETED') return;
-            if (processingTasks[task.id]) return;
+        const shareLink = () => {
+            const referralLink = `https://t.me/your_bot?start=${user?.referralCode}`;
+            const message = `আমার সাথে যোগ দিন এবং ৳80 বোনাস পান! ${referralLink}`;
 
-            setProcessingTasks(prev => ({ ...prev, [task.id]: 'starting' }));
-
-            try {
-                const initData = tg?.initData || '';
-
-                const startResponse = await fetch(`${API_BASE_URL}/tasks/${task.id}/start`, {
-                    method: 'POST',
-                    headers: { 'X-Telegram-Init-Data': initData }
-                });
-
-                if (!startResponse.ok) throw new Error('Failed to start task');
-
-                if (task.taskLink) {
-                    if (tg) {
-                        tg.openLink(task.taskLink);
-                    } else {
-                        window.open(task.taskLink, '_blank');
-                    }
-                }
-
-                setProcessingTasks(prev => ({ ...prev, [task.id]: 'ready' }));
-
-            } catch (err) {
-                console.error('Failed to start task:', err);
-                setProcessingTasks(prev => {
-                    const newState = { ...prev };
-                    delete newState[task.id];
-                    return newState;
-                });
+            if (tg) {
+                tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(message)}`);
             }
         };
 
-        const handleVerifyTask = async (taskId) => {
-            setProcessingTasks(prev => ({ ...prev, [taskId]: 'verifying' }));
-
-            try {
-                const initData = tg?.initData || '';
-
-                const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/verify`, {
-                    method: 'POST',
-                    headers: { 'X-Telegram-Init-Data': initData }
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    setTasks(tasks.map(t => t.id === taskId ? data : t));
-
-                    if (data.status === 'COMPLETED') {
-                        setUser(prev => ({
-                            ...prev,
-                            totalEarnings: parseFloat(prev.totalEarnings) + parseFloat(data.rewardAmount),
-                            completedTasks: prev.completedTasks + 1,
-                            pendingBalance: prev.pendingBalance + (parseFloat(data.rewardAmount) * 100)
-                        }));
-
-                        if (tg) {
-                            tg.showAlert(`🎉 টাস্ক সম্পন্ন! আপনি পেয়েছেন ৳${parseFloat(data.rewardAmount).toFixed(2)}`);
-                        }
-                    }
-                } else {
-                    if (tg) {
-                        tg.showAlert(data.error || 'যাচাইকরণ ব্যর্থ হয়েছে। নিশ্চিত করুন যে আপনি টাস্কটি সম্পূর্ণ করেছেন।');
-                    }
-                }
-            } catch (err) {
-                console.error('Task verification failed:', err);
-            } finally {
-                setProcessingTasks(prev => {
-                    const newState = { ...prev };
-                    delete newState[taskId];
-                    return newState;
-                });
-            }
-        };
-
-        const getTaskIcon = (taskType) => {
-            switch (taskType) {
-                case 'TELEGRAM_CHANNEL': return '📢';
-                case 'YOUTUBE': return '▶️';
-                case 'CUSTOM_LINK': return '🔗';
-                default: return '📋';
-            }
-        };
+        const adsProgress = user ? (user.completedTasks / user.totalTasks) * 100 : 0;
 
         if (loading) {
             return (
-                <div className="min-h-screen">
+                <div className="home-container">
                     <div className="loading">
                         <div className="spinner"></div>
                         <p style={{marginTop: '20px'}}>লোড হচ্ছে...</p>
@@ -612,22 +365,8 @@
             );
         }
 
-        if (error) {
-            return (
-                <div className="min-h-screen">
-                    <div className="error">
-                        <h3>⚠️ ত্রুটি</h3>
-                        <p>{error}</p>
-                    </div>
-                </div>
-            );
-        }
-
-        const pendingTasks = tasks.filter(t => t.status === 'PENDING');
-        const completedCount = tasks.filter(t => t.status === 'COMPLETED').length;
-
         return (
-            <div className="min-h-screen">
+            <div className="home-container">
                 {/* Header */}
                 <div className="header">
                     <div className="header-top">
@@ -650,82 +389,66 @@
                     <div className="balance-label">মোট ব্যালেন্স</div>
                     <div className="balance-amount">৳ {parseFloat(user?.totalEarnings || 0).toFixed(2)}</div>
                     <div className="balance-actions">
-                        <button className="balance-btn">💳 উইথড্র</button>
-                        <button className="balance-btn">📊 ইতিহাস</button>
+                        <button className="balance-btn" onClick={() => alert('উইথড্র ফিচার শীঘ্রই আসছে')}>
+                            💳 উইথড্র
+                        </button>
+                        <button className="balance-btn" onClick={() => alert('ইতিহাস ফিচার শীঘ্রই আসছে')}>
+                            📊 ইতিহাস
+                        </button>
                     </div>
                 </div>
 
-                {/* Stats */}
+                {/* Stats Grid */}
                 <div className="stats-grid">
                     <div className="stat-box">
-                        <div className="stat-icon">🎯</div>
+                        <div className="stat-icon">📺</div>
                         <div className="stat-value">{user?.completedTasks}/{user?.totalTasks}</div>
-                        <div className="stat-label">সম্পূর্ণ টাস্ক</div>
+                        <div className="stat-label">দৈনিক বিজ্ঞাপন</div>
+                        <div className="progress-bar">
+                            <div className="progress-fill" style={{width: `${adsProgress}%`}}></div>
+                        </div>
                     </div>
                     <div className="stat-box">
                         <div className="stat-icon">👥</div>
-                        <div className="stat-value">{user?.totalReferrals}</div>
+                        <div className="stat-value">{user?.totalReferrals || 0}</div>
                         <div className="stat-label">মোট রেফার</div>
                     </div>
+                    <div className="stat-box">
+                        <div className="stat-icon">🎯</div>
+                        <div className="stat-value">{user?.completedTasks || 0}</div>
+                        <div className="stat-label">সম্পূর্ণ টাস্ক</div>
+                    </div>
+                    <div className="stat-box">
+                        <div className="stat-icon">⭐</div>
+                        <div className="stat-value">{parseFloat(user?.totalEarnings || 0).toFixed(0)}</div>
+                        <div className="stat-label">মোট পয়েন্ট</div>
+                    </div>
                 </div>
 
-                {/* Task History */}
-                <div className="call-history">
-                    <div className="call-header">
-                        <h2>দৈনিক টাস্ক অগ্রগতি</h2>
-                        <span>{completedCount} / {tasks.length}</span>
+                {/* Referral Card */}
+                <div className="referral-card">
+                    <div className="referral-title">🎁 বন্ধুকে আমন্ত্রণ করুন</div>
+                    <div className="referral-description">
+                        আপনার রেফারাল লিংক শেয়ার করুন এবং প্রতি নতুন সদস্যের জন্য <strong>৳80</strong> বোনাস পান!
                     </div>
-                    <div className="call-box">
-                        🕒 <p>আজ {pendingTasks.length}টি টাস্ক বাকি আছে</p>
+                    <div className="bonus-badge">💵 প্রতি রেফারে ৳80 বোনাস</div>
+                    <div className="link-container">
+                        <input
+                            type="text"
+                            className="link-input"
+                            readOnly
+                            value={`https://t.me/your_bot?start=${user?.referralCode || 'XXXXXX'}`}
+                        />
+                        <button className="copy-btn" onClick={copyLink}>📋</button>
                     </div>
-                </div>
-
-                {/* Telegram Tasks */}
-                <div className="telegram-section">
-                    {pendingTasks.length === 0 ? (
-                        <div className="telegram-card">
-                            <div className="telegram-content">
-                                <div className="telegram-icon">🎉</div>
-                                <h3>সব টাস্ক সম্পূর্ণ!</h3>
-                                <p>আপনি সব টাস্ক সম্পন্ন করেছেন। নতুন টাস্কের জন্য পরে আসুন।</p>
-                            </div>
-                        </div>
-                    ) : (
-                        pendingTasks.map((task) => {
-                            const processing = processingTasks[task.id];
-                            return (
-                                <div key={task.id} className="telegram-card">
-                                    <div className="telegram-content">
-                                        <div className="telegram-icon">
-                                            {getTaskIcon(task.taskType)}
-                                        </div>
-                                        <h3>{task.taskTitle}</h3>
-                                        <p>{task.taskDescription}</p>
-                                        <div className="reward">
-                                            <span>🎁</span>
-                                            <span>রিওয়ার্ড: ৳{parseFloat(task.rewardAmount).toFixed(2)}</span>
-                                        </div>
-                                        <div className="button-group">
-                                            <button
-                                                className="btn-secondary"
-                                                onClick={() => handleStartTask(task)}
-                                                disabled={processing}
-                                            >
-                                                {processing === 'starting' ? '⏳ খোলা হচ্ছে...' : '📤 চ্যানেল প্রবেশ'}
-                                            </button>
-                                            <button
-                                                className={`btn-primary ${processing === 'ready' ? 'animate-pulse' : ''}`}
-                                                onClick={() => handleVerifyTask(task.id)}
-                                                disabled={processing && processing !== 'ready'}
-                                            >
-                                                {processing === 'verifying' ? '⏳ যাচাই হচ্ছে...' : '✅ চেক ও ক্লেইম'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    )}
+                    <div className="share-buttons">
+                        <button className="share-btn" onClick={copyLink}>
+                            🔗 কপি করুন
+                        </button>
+                        <button className="share-btn" onClick={shareLink}>
+                            📤 শেয়ার করুন
+                        </button>
+                    </div>
                 </div>
 
                 {/* Bottom Navigation */}
@@ -734,7 +457,7 @@
                         <div className="nav-icon">🏡</div>
                         <span>হোম</span>
                     </div>
-                    <div className={`nav-item ${activeNav === 'task' ? 'active' : ''}`} onClick={() => setActiveNav('task')}>
+                    <div className={`nav-item ${activeNav === 'task' ? 'active' : ''}`} onClick={() => window.location.href = '/tasks.html'}>
                         <div className="nav-icon">📝</div>
                         <span>টাস্ক</span>
                     </div>
@@ -755,7 +478,7 @@
         );
     };
 
-    ReactDOM.render(<TelegramTaskApp />, document.getElementById('root'));
+    ReactDOM.render(<HomePage />, document.getElementById('root'));
 </script>
 </body>
 </html>
